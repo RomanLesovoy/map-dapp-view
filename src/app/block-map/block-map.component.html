@@ -1,0 +1,9 @@
+<section class="block-map">
+  <div *ngFor="let row of blocks; let i = index" class="block-row">
+    <div *ngFor="let block of row; let j = index" 
+         class="block" 
+         [style.background-color]="getBlockColor(block)"
+         (click)="onBlockClick(block)">
+    </div>
+  </div>
+</section>

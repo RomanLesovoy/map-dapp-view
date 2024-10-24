@@ -1,0 +1,7 @@
+<div *ngIf="!web3Service.isConnected()">
+  <button (click)="connectWallet()">Подключить кошелек</button>
+</div>
+<div *ngIf="web3Service.isConnected()">
+  <p>Address: {{ web3Service.getCurrentAddress() }}</p>
+  <button (click)="web3Service.disconnectWallet()">Disconnect Wallet</button>
+</div>

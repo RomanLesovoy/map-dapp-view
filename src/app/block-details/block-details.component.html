@@ -1,0 +1,10 @@
+<aside [class.open]="isOpen" class="block-details">
+  <button (click)="close()" class="close-button">×</button>
+  <div *ngIf="selectedBlock">
+    <h2>Block Details</h2>
+    <p>Owner: {{ selectedBlock.owner }}</p>
+    <p>Color: {{ selectedBlock.color }}</p>
+    <p>Price: {{ selectedBlock.price }}</p>
+    <p>Owned: {{ selectedBlock.owned ? 'Yes' : 'No' }}</p>
+  </div>
+</aside>
