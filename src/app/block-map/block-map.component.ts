@@ -1,61 +1,40 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { firstValueFrom } from 'rxjs';
-import { ContractService } from '../services/contract.service';
 import { BlockService } from '../services/block.service';
-import { AuthService } from '../services/auth.service';
+import { Web3Service } from '../services/web3.service';
+import { BlockInfo } from '../services/contract.service';
+import { ColorPipe } from '../pipes/color.pipe';
 
 @Component({
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ColorPipe],
   selector: 'app-block-map',
   templateUrl: './block-map.component.html',
   styleUrls: ['./block-map.component.scss']
 })
 export class BlockMapComponent implements OnInit {
-  blocks: any[][] = [];
+  blocks: BlockInfo[][] = [];
 
   constructor(
-    private contractService: ContractService,
-    private blockService: BlockService,
-    private authService: AuthService
+    private readonly blockService: BlockService,
+    private readonly web3Service: Web3Service
   ) {}
 
   async ngOnInit() {
-    this.authService.isAuthenticated$.subscribe(isAuthenticated => {
-      isAuthenticated && this.loadBlocks();
+    this.blockService.blocks$.subscribe((blocks) => {
+      this.blocks = blocks;
     });
   }
 
-  async loadBlocks() {
-    const blocksPerPage = 100;
-    for (let i = 0; i < 10000; i += blocksPerPage) {
-      const blocksInfo = await firstValueFrom(this.contractService.getAllBlocksInfo(i, i + blocksPerPage - 1));
-      this.blocks.push(...this.chunkArray(blocksInfo, 100));
-    }
+  checkIsSelected(block: any) {
+    return this.blockService.getSelectedBlock()?.id === block.id;
   }
 
-  private chunkArray(array: any[], size: number) {
-    const chunked = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunked.push(array.slice(i, i + size));
-    }
-    return chunked;
+  checkIsOwned(block: any) {
+    return block.owner === this.web3Service.getCurrentAddress();
   }
 
   onBlockClick(block: any) {
-    // this.contractService.getBlockInfo(blockId).subscribe(
-    //   (blockInfo: BlockInfo) => {
-    //     this.blockService.setSelectedBlock(blockInfo);
-    //   },
-    //   error => {
-    //     console.error('Error fetching block info:', error);
-    //   }
-    // )
     this.blockService.setSelectedBlock(block);
-  }
-
-  getBlockColor(block: any) {
-    return `rgb(${block.color * 16}, ${block.color * 16}, ${block.color * 16})`;
   }
 }

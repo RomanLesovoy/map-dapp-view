@@ -1,16 +1,27 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Web3Service } from '../services/web3.service';
+import { AddressPipe } from '../pipes/address.pipe';
 
 @Component({
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AddressPipe],
   selector: 'app-auth',
   templateUrl: './auth.component.html',
   styleUrls: ['./auth.component.scss']
 })
 export class AuthComponent {
-  constructor(public web3Service: Web3Service) {}
+  isConnected: boolean = false;
+  currentAddress: string | null = null;
+
+  constructor(
+    public readonly web3Service: Web3Service,
+  ) {
+    this.web3Service.userAddressObservable$.subscribe((address) => {
+      this.isConnected = !!address;
+      this.currentAddress = address
+    });
+  }
 
   connectWallet() {
     if (this.web3Service.isEthereumAvailable()) {
@@ -22,6 +33,6 @@ export class AuthComponent {
   }
 
   disconnectWallet() {
-    this.web3Service.disconnectWallet();
+    this.web3Service.disconnect$.next(true);
   }
 }

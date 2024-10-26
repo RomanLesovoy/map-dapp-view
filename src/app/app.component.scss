@@ -1,0 +1,15 @@
+.main-container {
+  display: flex;
+  height: calc(100vh - 60px); // Предполагаемая высота хедера
+}
+
+app-block-map {
+  flex: 1;
+  overflow: auto;
+}
+
+app-block-details {
+  width: 300px;
+  overflow-y: auto;
+}
+

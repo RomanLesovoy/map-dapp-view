@@ -1,7 +1,10 @@
-<div *ngIf="!web3Service.isConnected()">
-  <button (click)="connectWallet()">Подключить кошелек</button>
-</div>
-<div *ngIf="web3Service.isConnected()">
-  <p>Address: {{ web3Service.getCurrentAddress() }}</p>
-  <button (click)="web3Service.disconnectWallet()">Disconnect Wallet</button>
-</div>
+<section class="auth-section">
+  <div *ngIf="!this.isConnected">
+    <button (click)="this.connectWallet()">Connect wallet</button>
+  </div>
+  <div *ngIf="this.isConnected">
+    <img src="user-icon.png" alt="wallet">
+    <p>{{ this.currentAddress | address }}</p>
+    <button (click)="this.disconnectWallet()">Disconnect Wallet</button>
+  </div>
+</section>

@@ -1,0 +1,23 @@
+.auth-section > div {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  & > * {
+    margin-left: 10px;
+  }
+
+  & > p {
+    font-size: 10px;
+  }
+
+  & > button {
+    margin-left: 50px;
+    height: 30px;
+  }
+}
+
+.auth-section > div > img {
+  width: 25px;
+  height: 25px;
+}

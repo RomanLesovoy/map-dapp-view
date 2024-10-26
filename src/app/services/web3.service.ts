@@ -1,25 +1,44 @@
 import { Injectable } from '@angular/core';
-import { BrowserProvider, Signer } from 'ethers';
-import { BehaviorSubject } from 'rxjs';
+import { BrowserProvider, FeeData, Network, Signer } from 'ethers';
+import { BehaviorSubject, distinctUntilChanged, Subject, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Web3Service {
+  private storageKey = 'userAddress';
   private provider: BrowserProvider | null = null;
   private signer: Signer | null = null;
   private userAddress$: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
-  public userAddressObservable$ = this.userAddress$.asObservable();
+  public userAddressObservable$ = this.userAddress$.asObservable().pipe(distinctUntilChanged());
+  public disconnect$ = new Subject<boolean>();
+  public notAuthenticated = { address: null, token: null };
 
   constructor() {
     this.initializeProvider();
+
+    this.disconnect$.pipe(
+      tap((disconnect: boolean) => {
+        disconnect && this.disconnectWallet();
+        return disconnect;
+      })
+    ).subscribe();
   }
 
   public isEthereumAvailable(): boolean {
     return typeof window.ethereum !== 'undefined';
   }
 
-  public getSigner(): Signer | null {
+  public async getFeeData(): Promise<FeeData> {
+    return await this.provider!.getFeeData();
+  }
+
+  public async getSigner(): Promise<Signer | null> {
+    if (!this.signer) {
+      this.signer = await this.provider!.getSigner();
+      const address = await this.signer.getAddress();
+      this.setUserAddress(address);
+    }
     return this.signer;
   }
 
@@ -27,55 +46,64 @@ export class Web3Service {
     if (this.isEthereumAvailable()) {
       this.provider = new BrowserProvider(window.ethereum);
       await this.tryConnectWithStoredAddress();
+    } else {
+      throw new Error('Ethereum provider not available');
     }
   }
 
-  async connectWallet(): Promise<void> {
-    if (!this.provider) {
-      throw new Error('Ethereum provider not available');
+  public async getNetwork(): Promise<Network> {
+    return await this.provider!.getNetwork();
+  }
+
+  public async connectWallet(): Promise<void> {
+    if (this.signer && this.userAddress$.value) {
+      return;
     }
 
     try {
-      console.log('connectWallet');
-      const accounts = await this.provider.send('eth_requestAccounts', []);
+      const accounts = await this.provider!.send('eth_requestAccounts', []);
       if (accounts.length > 0) {
-        this.signer = await this.provider.getSigner();
-        const address = await this.signer.getAddress();
-        this.setUserAddress(address);
+        this.getSigner();
+      } else {
+        throw new Error('No accounts');
       }
     } catch (error) {
-      console.error('Error connecting wallet:', error);
       throw error;
     }
   }
 
   private async tryConnectWithStoredAddress() {
-    const storedAddress = localStorage.getItem('userAddress');
+    const storedAddress = localStorage.getItem(this.storageKey);
     if (storedAddress) {
       try {
-        console.log('tryConnectWithStoredAddress');
         const accounts = await this.provider!.listAccounts();
         const matchingAccount = accounts.find(account => account.address.toLowerCase() === storedAddress.toLowerCase());
         if (matchingAccount) {
-          this.signer = await this.provider!.getSigner(storedAddress);
           this.userAddress$.next(storedAddress);
         } else {
           // Stored address is no longer available, clear it
-          this.clearUserAddress();
+          this.disconnectWallet();
         }
       } catch (error) {
         console.error('Error reconnecting with stored address:', error);
-        this.clearUserAddress();
+        this.disconnectWallet();
       }
     }
   }
 
-  public disconnectWallet(): void {
-    this.clearUserAddress();
+  public async signMessage(message: string): Promise<string> {
+    try {
+      return (await this.getSigner())!.signMessage(message);
+    } catch (e) {
+      console.error('Error signing message:', e);
+      throw e;
+    }
   }
 
-  public isConnected(): boolean {
-    return this.getCurrentAddress() !== null;
+  private disconnectWallet(): void {
+    localStorage.removeItem(this.storageKey);
+    this.userAddress$.next(null);
+    this.signer = null;
   }
 
   public getCurrentAddress(): string | null {
@@ -83,13 +111,7 @@ export class Web3Service {
   }
 
   private setUserAddress(address: string) {
-    localStorage.setItem('userAddress', address);
+    localStorage.setItem(this.storageKey, address);
     this.userAddress$.next(address);
-  }
-
-  private clearUserAddress() {
-    localStorage.removeItem('userAddress');
-    this.userAddress$.next(null);
-    this.signer = null;
   }
 }
