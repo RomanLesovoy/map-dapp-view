@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ContractService } from '../../services/contract.service';
-import { Observable } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
+import { Observable, combineLatest, debounceTime, map } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -14,9 +15,16 @@ export class PixelLoaderModalComponent implements OnInit {
   isLoading$: Observable<boolean>;
 
   constructor(
-    private contractService: ContractService
+    private contractService: ContractService,
+    private authService: AuthService,
   ) {
-    this.isLoading$ = this.contractService.isLoading$;
+    this.isLoading$ = combineLatest([
+      this.contractService.isLoadingObservable$,
+      this.authService.isLoadingObservable$
+    ]).pipe(
+      debounceTime(300),
+      map(([isContractLoading, isAuthLoading]) => isContractLoading || isAuthLoading)
+    );
   }
 
   ngOnInit(): void {}

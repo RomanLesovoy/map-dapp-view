@@ -1,6 +1,11 @@
-<app-header></app-header>
-<div class="main-container">
-  <app-block-map></app-block-map>
-  <app-block-details></app-block-details>
-</div>
+<app-ethereum-not-available *ngIf="!isMetamaskAvailable else appContainer"></app-ethereum-not-available>
+
+<ng-template #appContainer>
+  <app-header></app-header>
+  <div class="main-container">
+    <app-block-map></app-block-map>
+    <app-block-details></app-block-details>
+  </div>
+</ng-template>
+
 <app-pixel-loader-modal></app-pixel-loader-modal>

@@ -11,6 +11,8 @@ export class AuthService {
   private authToken$ = new BehaviorSubject<string | null>(null);
   private keyTokey = 'authToken';
   private isAuthenticatedSubject$ = new BehaviorSubject<boolean>(false);
+  private isLoading$ = new BehaviorSubject<boolean>(false);
+  public isLoadingObservable$ = this.isLoading$.asObservable();
   public authTokenObservable$ = this.authToken$.asObservable();
   public isAuthenticated$ = this.isAuthenticatedSubject$.asObservable().pipe(distinctUntilChanged());
 
@@ -24,6 +26,7 @@ export class AuthService {
 
     this.web3Service.userAddressObservable$.pipe(
       switchMap((address: string | null) => {
+        this.isLoading$.next(true);
         const token = this.getAuthToken();
         if (!!address && token) { // storage has address & token
           return this.verifyToken(token);
@@ -33,8 +36,14 @@ export class AuthService {
         return of(this.web3Service.notAuthenticated);
       }),
     ).subscribe({
-      next: ({ address, token }) => address && token && this.setAuthState(token),
-      error: (error) => this.onAuthError(error),
+      next: ({ address, token }) => {
+        this.isLoading$.next(false);
+        address && token && this.setAuthState(token)
+      },
+      error: (error) => {
+        this.isLoading$.next(false);
+        this.onAuthError(error)
+      },
     });
   }
 
