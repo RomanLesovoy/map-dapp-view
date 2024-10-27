@@ -1,27 +1,32 @@
 # MapDappView
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.5.
+Angular based dapp to interact with https://github.com/RomanLesovoy/map-dapp and Metamask.
 
-## Development server
+## Requirements
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- Node.js (version 14.x or higher)
+- npm (version 6.x or higher)
+- Angular CLI (version 18.2.5 or higher)
+- MetaMask or other Ethereum-compatible wallet
 
-## Code scaffolding
+## Development
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+- Run `npm install` to install dependencies.
+- Run `ng serve` to start the development server.
 
-## Build
+## Environment
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+- `production`: {true | false},
+- `apiUrl`: {nest api url},
+- `contractAddress`: {your contract address},
 
-## Running unit tests
+## Features
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+- Integration with MetaMask for interacting with Ethereum blockchain
+- Displaying a map of blocks
+- Ability to buy, change color and price of blocks
 
 ## Further help
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Contact me:
+- Email: romadesire97@gmail.com
