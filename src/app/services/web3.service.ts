@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
-import { BrowserProvider, FeeData, Network, Signer } from 'ethers';
+import { DestroyRef, Injectable } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { BrowserProvider, Signer } from 'ethers';
 import { BehaviorSubject, distinctUntilChanged, Subject, tap } from 'rxjs';
 
 @Injectable({
@@ -14,11 +15,14 @@ export class Web3Service {
   public disconnect$ = new Subject<boolean>();
   public notAuthenticated = { address: null, token: null };
 
-  constructor() {
+  constructor(
+    private readonly destroy$: DestroyRef,
+  ) {
     this.provider = new BrowserProvider(window.ethereum);
     this.tryConnectWithStoredAddress();
 
     this.disconnect$.pipe(
+      takeUntilDestroyed(this.destroy$),
       tap((disconnect: boolean) => {
         disconnect && this.disconnectWallet();
         return disconnect;

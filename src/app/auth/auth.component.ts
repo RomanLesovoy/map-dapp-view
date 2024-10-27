@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Web3Service } from '../services/web3.service';
 import { AddressPipe } from '../pipes/address.pipe';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   standalone: true,
@@ -15,12 +16,15 @@ export class AuthComponent {
   currentAddress: string | null = null;
 
   constructor(
-    public readonly web3Service: Web3Service,
+    private readonly web3Service: Web3Service,
+    private readonly destroy$: DestroyRef,
   ) {
-    this.web3Service.userAddressObservable$.subscribe((address) => {
-      this.isConnected = !!address;
-      this.currentAddress = address
-    });
+    this.web3Service.userAddressObservable$
+      .pipe(takeUntilDestroyed(this.destroy$))
+      .subscribe((address) => {
+        this.isConnected = !!address;
+        this.currentAddress = address
+      });
   }
 
   connectWallet() {

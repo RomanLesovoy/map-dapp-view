@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { BlockService } from '../services/block.service';
 import { Web3Service } from '../services/web3.service';
@@ -23,20 +24,21 @@ export class BlockMapComponent implements OnInit {
 
   constructor(
     private readonly blockService: BlockService,
-    private readonly web3Service: Web3Service
+    private readonly web3Service: Web3Service,
+    private readonly destroy$: DestroyRef,
   ) {
     this.isLoading = this.blockService.isLoading$;
   }
 
   async ngOnInit() {
-    this.blockService.blocks$.subscribe((blocks) => {
+    this.blockService.blocks$.pipe(takeUntilDestroyed(this.destroy$)).subscribe((blocks) => {
       this.blocks = blocks;
       this.blocksRowAmount = this.blocksColAmount = Array(this.blockService.rowAmount);
     });
-    this.web3Service.userAddressObservable$.subscribe((address) => {
+    this.web3Service.userAddressObservable$.pipe(takeUntilDestroyed(this.destroy$)).subscribe((address) => {
       this.currentUserAddress = address;
     });
-    this.blockService.selectedBlock$.subscribe((block) => {
+    this.blockService.selectedBlock$.pipe(takeUntilDestroyed(this.destroy$)).subscribe((block) => {
       this.selectedBlock = block;
     });
   }

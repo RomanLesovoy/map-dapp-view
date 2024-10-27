@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { DestroyRef, Injectable } from '@angular/core';
 import { EventEmitterSingleton } from '@js-emitter/event-emitter-light';
 import { BehaviorSubject, forkJoin } from 'rxjs';
 import { BlockInfo, ContractService } from './contract.service';
 import { AuthService } from './auth.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root'
@@ -19,9 +20,10 @@ export class BlockService {
 
   constructor(
     private readonly contractService: ContractService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly destroy$: DestroyRef,
   ) {
-    this.authService.isAuthenticated$.subscribe((isAuthenticated: boolean) => {
+    this.authService.isAuthenticated$.pipe(takeUntilDestroyed(this.destroy$)).subscribe((isAuthenticated: boolean) => {
       isAuthenticated && !this.blocksSubject.getValue().length && this.loadBlocks();
     });
     new EventEmitterSingleton().subscribe({

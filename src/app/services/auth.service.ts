@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { DestroyRef, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, distinctUntilChanged, of, switchMap, map, from, Observable, tap, catchError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Web3Service } from './web3.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root'
@@ -18,13 +19,16 @@ export class AuthService {
 
   constructor(
     private readonly http: HttpClient,
-    private readonly web3Service: Web3Service
+    private readonly web3Service: Web3Service,
+    private readonly destroy$: DestroyRef,
   ) {
     this.web3Service.disconnect$.pipe(
+      takeUntilDestroyed(this.destroy$),
       tap(() => this.clearAuthState())
     ).subscribe();
 
     this.web3Service.userAddressObservable$.pipe(
+      takeUntilDestroyed(this.destroy$),
       switchMap((address: string | null) => {
         this.isLoading$.next(true);
         const token = this.getAuthToken();
