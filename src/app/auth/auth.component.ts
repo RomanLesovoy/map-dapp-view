@@ -24,12 +24,11 @@ export class AuthComponent {
   }
 
   connectWallet() {
-    if (this.web3Service.isEthereumAvailable()) {
-      this.web3Service.connectWallet();
-    } else {
-      console.error('Ethereum wallet not found');
-      // todo show modal
-    }
+    this.web3Service.connectWallet();
+  }
+
+  copyAddress() {
+    navigator.clipboard.writeText(this.currentAddress!);
   }
 
   disconnectWallet() {

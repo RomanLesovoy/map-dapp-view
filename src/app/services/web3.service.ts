@@ -15,7 +15,8 @@ export class Web3Service {
   public notAuthenticated = { address: null, token: null };
 
   constructor() {
-    this.initializeProvider();
+    this.provider = new BrowserProvider(window.ethereum);
+    this.tryConnectWithStoredAddress();
 
     this.disconnect$.pipe(
       tap((disconnect: boolean) => {
@@ -25,14 +26,6 @@ export class Web3Service {
     ).subscribe();
   }
 
-  public isEthereumAvailable(): boolean {
-    return typeof window.ethereum !== 'undefined';
-  }
-
-  public async getFeeData(): Promise<FeeData> {
-    return await this.provider!.getFeeData();
-  }
-
   public async getSigner(): Promise<Signer | null> {
     if (!this.signer) {
       this.signer = await this.provider!.getSigner();
@@ -40,19 +33,6 @@ export class Web3Service {
       this.setUserAddress(address);
     }
     return this.signer;
-  }
-
-  private async initializeProvider() {
-    if (this.isEthereumAvailable()) {
-      this.provider = new BrowserProvider(window.ethereum);
-      await this.tryConnectWithStoredAddress();
-    } else {
-      throw new Error('Ethereum provider not available');
-    }
-  }
-
-  public async getNetwork(): Promise<Network> {
-    return await this.provider!.getNetwork();
   }
 
   public async connectWallet(): Promise<void> {

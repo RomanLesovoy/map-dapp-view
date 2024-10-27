@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { EventEmitterSingleton } from '@js-emitter/event-emitter-light';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { BlockInfo, ContractService } from './contract.service';
 import { AuthService } from './auth.service';
@@ -7,6 +8,7 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class BlockService {
+  private rowAmount = 100;
   private blocksSubject = new BehaviorSubject<BlockInfo[][]>([]);
   blocks$ = this.blocksSubject.asObservable();
   private selectedBlockSubject = new BehaviorSubject<BlockInfo | null>(null);
@@ -18,6 +20,12 @@ export class BlockService {
   ) {
     this.authService.isAuthenticated$.subscribe((isAuthenticated: boolean) => {
       isAuthenticated && !this.blocksSubject.getValue().length && this.loadBlocks();
+    });
+    new EventEmitterSingleton().subscribe({
+      on: 'block-cache-updated',
+      next: (block: BlockInfo) => {
+        block.id && this.replaceBlock(block);
+      }
     });
   }
 
@@ -37,14 +45,21 @@ export class BlockService {
     this.blocksSubject.next(blocks);
   }
 
+  public replaceBlock(block: BlockInfo) {
+    const blocks = this.blocksSubject.getValue();
+    const row = Math.floor(Number(block.id) / this.rowAmount);
+    const col = Number(block.id) % this.rowAmount;
+    blocks[row][col] = block;
+    this.setBlocks(blocks);
+  }
+
   async loadBlocks() {
-    const allSize = 200; // 10000; // todo
-    const blocksPerPage = 100;
-    for (let i = 0; i < allSize; i += blocksPerPage) {
-      const blocksInfo: BlockInfo[] = await firstValueFrom(this.contractService.getAllBlocksInfo(i, i + blocksPerPage - 1));
+    const allSize = this.rowAmount * this.rowAmount;
+    for (let i = 0; i < allSize; i += this.rowAmount) {
+      const blocksInfo: BlockInfo[] = await firstValueFrom(this.contractService.getAllBlocksInfo(i, i + this.rowAmount - 1));
       this.setBlocks([
         ...this.blocksSubject.getValue(),
-        ...this.chunkArray(blocksInfo, 100),
+        ...this.chunkArray(blocksInfo, this.rowAmount),
       ]);
     }
   }

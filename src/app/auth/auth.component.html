@@ -4,7 +4,7 @@
   </div>
   <div *ngIf="this.isConnected">
     <img src="user-icon.png" alt="wallet">
-    <p>{{ this.currentAddress | address }}</p>
+    <p class="address" (click)="this.copyAddress()">{{ this.currentAddress | address }}</p>
     <button (click)="this.disconnectWallet()">Disconnect Wallet</button>
   </div>
 </section>

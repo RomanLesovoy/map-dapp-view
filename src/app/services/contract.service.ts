@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Web3Service } from './web3.service';
+import { EventEmitterSingleton } from '@js-emitter/event-emitter-light';
 import { BehaviorSubject, finalize, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -16,14 +17,14 @@ export interface BlockInfo {
   providedIn: 'root'
 })
 export class ContractService {
-  private readonly apiUrl = `${environment.apiUrl}/blocks`; // Default API Path
+  private readonly apiUrl = `${environment.apiUrl}/blocks`;
   private readonly contractAddress = environment.contractAddress;
   private isLoading$ = new BehaviorSubject<boolean>(false);
   public isLoadingObservable$ = this.isLoading$.asObservable();
 
   constructor(
     private readonly http: HttpClient,
-    private readonly web3Service: Web3Service
+    private readonly web3Service: Web3Service,
   ) {}
 
   getBlockInfo(blockId: number): Observable<BlockInfo> {
@@ -106,7 +107,10 @@ export class ContractService {
   }
 
   private updateBlockInfoCache(blockId: number) {
-    this.http.get(`${this.apiUrl}/${blockId}/cache`).subscribe();
+    this.http.post<BlockInfo>(`${this.apiUrl}/${blockId}/cache`, {}).subscribe({
+      next: (block: BlockInfo) => block.id && new EventEmitterSingleton().emit('block-cache-updated', block),
+      error: (e) => console.error(e),
+    });
   }
 
   private async sendTransaction(data: string, value?: string) {
