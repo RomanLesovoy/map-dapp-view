@@ -1,11 +1,17 @@
 <section class="block-map">
-  <div *ngFor="let row of blocks; let i = index" class="block-row">
-    <div *ngFor="let block of row; let j = index" 
-         class="block" 
-         [class.owned]="checkIsOwned(block)"
-         [class.selected]="checkIsSelected(block)"
-         [style.background-color]="block.color | color"
-         (click)="onBlockClick(block)">
+  <div *ngIf="this.isLoading | async else content" class="pixel-blocks-loader"></div>
+
+  <ng-template #content>
+    <div *ngFor="let row of blocksRowAmount; let rowIndex = index" class="block-row">
+      <ng-container *ngFor="let col of blocksColAmount; let colIndex = index;">
+        <div *ngIf="blocks[rowIndex * blocksColAmount.length + colIndex]" 
+          class="block" 
+          [class.owned]="currentUserAddress === blocks[rowIndex * blocksColAmount.length + colIndex]!.owner"
+          [class.selected]="selectedBlock?.id === blocks[rowIndex * blocksColAmount.length + colIndex]!.id"
+          [style.background-color]="blocks[rowIndex * blocksColAmount.length + colIndex]!.color | color"
+          (click)="onBlockClick(blocks[rowIndex * blocksColAmount.length + colIndex])">
+        </div>
+      </ng-container>
     </div>
-  </div>
+  </ng-template>
 </section>
