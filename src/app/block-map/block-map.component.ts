@@ -11,6 +11,7 @@ import { ColorPipe } from '../pipes/color.pipe';
   standalone: true,
   imports: [CommonModule, ColorPipe],
   selector: 'app-block-map',
+  // changeDetection: ChangeDetectionStrategy.OnPush, // check if it's needed
   templateUrl: './block-map.component.html',
   styleUrls: ['./block-map.component.scss']
 })

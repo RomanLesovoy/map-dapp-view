@@ -11,6 +11,9 @@
   align-items: center;
   overflow: auto;
   justify-content: center;
+
+  // testing
+  backface-visibility: hidden;
 }
 
 .block-row {
@@ -22,6 +25,11 @@
   height: 10px;
   border: 1px solid #ccc;
   cursor: pointer;
+
+  &:hover {
+    transform: scale(1.2);
+    background-color: #333;
+  }
 
   &.owned {
     border: 2px solid white;
