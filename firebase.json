@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "dist/map-dapp-view",
+    "public": "dist/map-dapp-view/browser",
     "ignore": [
       "firebase.json",
       "**/.*",
