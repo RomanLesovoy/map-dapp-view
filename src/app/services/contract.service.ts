@@ -62,8 +62,10 @@ export class ContractService {
   }
 
   getAllBlocksInfo(startId: number, endId: number): Observable<BlockInfo[]> {
+    const withQueue = true;
+
     this.isLoading$.next(true);
-    return this.http.get<BlockInfo[]>(`${this.apiUrl}`, {
+    return this.http.get<BlockInfo[]>(`${this.apiUrl}${withQueue ? '/queue' : ''}`, {
       params: { startId: startId.toString(), endId: endId.toString() }
     }).pipe(finalize(() => this.isLoading$.next(false)));
   }

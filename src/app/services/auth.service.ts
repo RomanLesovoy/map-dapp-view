@@ -4,6 +4,7 @@ import { BehaviorSubject, distinctUntilChanged, of, switchMap, map, from, Observ
 import { environment } from '../../environments/environment';
 import { Web3Service } from './web3.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { jwtDecode } from 'jwt-decode';
 
 @Injectable({
   providedIn: 'root'
@@ -32,9 +33,11 @@ export class AuthService {
       switchMap((address: string | null) => {
         this.isLoading$.next(true);
         const token = this.getAuthToken();
-        if (!!address && token) { // storage has address & token
+        const tokenValid = token && !this.isTokenExpired(token);
+
+        if (!!address && tokenValid) { // storage has address & token valid
           return this.verifyToken(token);
-        } else if (!!address && !token) { // web3 is connected but no token
+        } else if (!!address && !tokenValid) { // web3 is connected but no valid token
           return this.authenticateToApiWithAddress();
         }
         return of(this.web3Service.notAuthenticated);
@@ -49,6 +52,13 @@ export class AuthService {
         this.onAuthError(error)
       },
     });
+  }
+
+  public isTokenExpired(token: string): boolean {
+    if (!token) return true;
+    const decodedToken = jwtDecode(token)!;
+    const expirationDate = new Date(Number(decodedToken.exp) * 1000);
+    return expirationDate < new Date();
   }
 
   private onAuthError(error: any) {
