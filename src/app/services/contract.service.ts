@@ -33,12 +33,6 @@ export class ContractService {
       .pipe(finalize(() => this.isLoading$.next(false)));
   }
 
-  setBlockColor(blockId: number, color: number): Observable<{ success: boolean, message: string }> {
-    this.isLoading$.next(true);
-    return this.http.post<{ success: boolean, message: string }>(`${this.apiUrl}/${blockId}/color`, { color })
-      .pipe(finalize(() => this.isLoading$.next(false)));
-  }
-
   async setBlockColorDirectly(blockId: number, color: number) {
     this.isLoading$.next(true);
     this.http.post(`${this.apiUrl}/${blockId}/color-transaction`, { color }).subscribe({
@@ -55,17 +49,11 @@ export class ContractService {
     });
   }
 
-  setBlockPrice(blockId: number, price: number): Observable<{ success: boolean, message: string }> {
-    this.isLoading$.next(true);
-    return this.http.post<{ success: boolean, message: string }>(`${this.apiUrl}/${blockId}/price`, { price })
-      .pipe(finalize(() => this.isLoading$.next(false)));
-  }
-
-  getAllBlocksInfo(startId: number, endId: number): Observable<BlockInfo[]> {
+  getAllBlocksInfo(startId: number, endId: number): Observable<{ blocks: BlockInfo[] }> {
     const withQueue = true;
 
     this.isLoading$.next(true);
-    return this.http.get<BlockInfo[]>(`${this.apiUrl}${withQueue ? '/queue' : ''}`, {
+    return this.http.get<{ blocks: BlockInfo[] }>(`${this.apiUrl}${withQueue ? '/queue' : ''}`, {
       params: { startId: startId.toString(), endId: endId.toString() }
     }).pipe(finalize(() => this.isLoading$.next(false)));
   }
@@ -84,12 +72,6 @@ export class ContractService {
         this.isLoading$.next(false);
       }
     });
-  }
-
-  buyBlock(blockId: number): Observable<{ success: boolean, message: string }> {
-    this.isLoading$.next(true);
-    return this.http.post<{ success: boolean, message: string }>(`${this.apiUrl}/${blockId}/buy`, {})
-      .pipe(finalize(() => this.isLoading$.next(false)));
   }
 
   async buyBlockDirectly(block: BlockInfo) {

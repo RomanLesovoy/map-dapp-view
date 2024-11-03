@@ -69,10 +69,11 @@ export class BlockService {
   
     // Send all requests in parallel
     forkJoin(requests).subscribe({
-      next: (results: BlockInfo[][]) => {
-        const allBlocks = results.flat();
+      next: (results: Array<{ blocks: Array<BlockInfo> }>) => {
+        const allBlocks = results.flatMap(result => result.blocks);
         this.setBlocks(allBlocks);
         this.isLoadingSubject.next(false);
+        console.log('Blocks loaded', allBlocks);
       },
       error: (error) => {
         console.error('Error loading blocks:', error);
